@@ -137,7 +137,7 @@ public class TestGame implements ILogic {
 			Vector2f rotVec = mouseInput.getDisplayVec();
 			camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
 		}
-		entity.incrementRotation(0, 0.5f, 0);
+		entity.incrementRotation(0, 0.f, 0);
 	}
 
 	@Override

@@ -43,6 +43,7 @@ public class WindowManager {
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
+		GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, Constants.MSAA_SAMPLES);
 
 		boolean maximized = false;
 		if (width == 0 || height == 0) {
@@ -71,6 +72,7 @@ public class WindowManager {
 			GLFW.glfwMaximizeWindow(windowHandle);
 		else  {
 			GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+			assert vidMode != null;
 			GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
 		}
 
