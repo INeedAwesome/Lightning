@@ -6,6 +6,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import site.gr8.mattis.lightning.Launcher;
 import site.gr8.mattis.lightning.core.entity.Entity;
+import site.gr8.mattis.lightning.core.lighting.DirectionalLight;
+import site.gr8.mattis.lightning.core.lighting.PointLight;
 import site.gr8.mattis.lightning.core.utils.Constants;
 import site.gr8.mattis.lightning.core.utils.Transformation;
 import site.gr8.mattis.lightning.core.utils.Utils;
@@ -30,8 +32,12 @@ public class RenderManager {
 		shader.createUniform("viewMatrix");
 		shader.createUniform("ambientLight");
 		shader.createMaterialUniform("material");
+		shader.createUniform("specularPower");
+		shader.createDirectionalLightUniform("directionalLight");
+		shader.createPointLightUniform("pointLight");
+
 	}
-	public void render(Entity entity, Camera camera) {
+	public void render(Entity entity, Camera camera, DirectionalLight directionalLight, PointLight pointLight) {
 		clear();
 
 		if (window.isResize()) {
@@ -46,7 +52,10 @@ public class RenderManager {
 		shader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
 		shader.setUniform("material", entity.getModel().getMaterial());
 		shader.setUniform("ambientLight", Constants.AMBIENT_LIGHT);
-
+		shader.setUniform("specularPower", Constants.SPECULAR_POWER);
+		shader.setUniform("directionalLight", directionalLight);
+		shader.setUniform("pointLight", pointLight);
+		
 		GL30.glBindVertexArray(entity.getModel().getId());
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);

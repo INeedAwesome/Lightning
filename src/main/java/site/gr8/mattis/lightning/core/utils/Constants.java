@@ -15,6 +15,8 @@ public class Constants {
 	public static final float CAMERA_STEP = 0.05f;
 
 	public static final Vector4f DEAULT_COLOR = new Vector4f(1, 1, 1, 1);
+	public static final Vector3f AMBIENT_LIGHT = new Vector3f(0.2f, 0.2f, 0.2f);
+	public static final float SPECULAR_POWER = 10;
 
-	public static final Vector3f AMBIENT_LIGHT = new Vector3f(1.6f, 1.6f, 1.6f);
+
 }

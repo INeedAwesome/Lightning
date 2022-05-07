@@ -49,10 +49,10 @@ public class MouseInput {
 			if (rotateY)
 				this.displayVec.x = (float) y;
 		}
-		if (currentPosition.x < 1 )
-			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), Launcher.getWindow().getWidth() / 2 , currentPosition.y);
-		if (currentPosition.y < 1)
-			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), currentPosition.x , Launcher.getWindow().getHeight() -1);
+		if (currentPosition.x < 1 && GLFW.glfwGetInputMode(Launcher.getWindow().getWindowHandle(), GLFW.GLFW_CURSOR) == GLFW.GLFW_CURSOR_DISABLED)
+			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), Launcher.getWindow().getWidth() - 1 , currentPosition.y);
+		if (currentPosition.y < 1 && GLFW.glfwGetInputMode(Launcher.getWindow().getWindowHandle(), GLFW.GLFW_CURSOR) == GLFW.GLFW_CURSOR_DISABLED)
+			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), currentPosition.x , Launcher.getWindow().getHeight() - 1);
 		previousPosition.x = currentPosition.x;
 		previousPosition.y = currentPosition.y;
 	}

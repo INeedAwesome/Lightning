@@ -6,6 +6,8 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 import site.gr8.mattis.lightning.core.entity.Material;
+import site.gr8.mattis.lightning.core.lighting.DirectionalLight;
+import site.gr8.mattis.lightning.core.lighting.PointLight;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,21 @@ public class ShaderManager {
 		createUniform(name + ".specular");
 		createUniform(name + ".hasTexture");
 		createUniform(name + ".reflectance");
+	}
+
+	public void createDirectionalLightUniform(String name) throws Exception {
+		createUniform(name + ".color");
+		createUniform(name + ".direction");
+		createUniform(name + ".intensity");
+	}
+
+	public void createPointLightUniform(String name) throws Exception {
+		createUniform(name + ".color");
+		createUniform(name + ".position");
+		createUniform(name + ".intensity");
+		createUniform(name + ".constant");
+		createUniform(name + ".linear");
+		createUniform(name + ".exponent");
 	}
 
 	public void createVertexShader(String shaderCode) throws Exception {
@@ -95,6 +112,21 @@ public class ShaderManager {
 		setUniform(name + ".specular", value.getSpecularColor());
 		setUniform(name + ".hasTexture", value.hasTexture() ? 1 : 0);
 		setUniform(name + ".reflectance", value.getReflectance());
+	}
+
+	public void setUniform(String name, DirectionalLight value) {
+		setUniform(name + ".color", value.getColor());
+		setUniform(name + ".direction", value.getDirection());
+		setUniform(name + ".intensity", value.getIntensity());
+	}
+
+	public void setUniform(String name, PointLight value) {
+		setUniform(name + ".color", value.getColor());
+		setUniform(name + ".position", value.getPosition());
+		setUniform(name + ".intensity", value.getIntensity());
+		setUniform(name + ".constant", value.getConstant());
+		setUniform(name + ".linear", value.getLinear());
+		setUniform(name + ".exponent", value.getExponent());
 	}
 
 	public void setUniform(String name, Vector3f value) {
