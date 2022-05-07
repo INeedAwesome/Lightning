@@ -12,8 +12,6 @@ import site.gr8.mattis.lightning.core.utils.Constants;
 public class WindowManager {
 
 	public static final float FOV = Math.toRadians(90);
-	public static final float Z_NEAR = 0.01f;
-	public static final float Z_FAR = 1000f;
 
 	private String title;
 	private int width, height;
@@ -21,6 +19,8 @@ public class WindowManager {
 
 	private boolean resize, vsync;
 	private final Matrix4f projectionMatrix;
+	private int[] keyStates = new int[GLFW.GLFW_KEY_LAST];
+	private boolean[] keys = new boolean[GLFW.GLFW_KEY_LAST];
 
 	public WindowManager(String title, int width, int height, boolean vsync) {
 		this.title = title;
@@ -66,29 +66,34 @@ public class WindowManager {
 		GLFW.glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
 			if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
 				GLFW.glfwSetWindowShouldClose(window, true);
+			else {
+				keyStates[key] = action;
+				keys[key] = action != GLFW.GLFW_RELEASE;
+			}
 		});
 
 		if (maximized)
 			GLFW.glfwMaximizeWindow(windowHandle);
 		else  {
 			GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-			assert vidMode != null;
-			GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
+			if (vidMode != null)
+				GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
 		}
 
 		GLFW.glfwMakeContextCurrent(windowHandle);
 
 		if (isVsync())
 			GLFW.glfwSwapInterval(1);
+		else GLFW.glfwSwapInterval(0);
+
 		GLFW.glfwShowWindow(windowHandle);
 		GL.createCapabilities();
 
 		GL11.glClearColor(0, 0, 0, 0);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_STENCIL_TEST);
-		/*GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glCullFace(GL11.GL_BACK);
-		 */
 	}
 
 	public void update() {
@@ -104,8 +109,28 @@ public class WindowManager {
 		GL11.glClearColor(r, g, b, a);
 	}
 
+	/**
+	 *
+	 * @param keycode
+	 * @returns true if button is pressed currently
+	 */
 	public boolean isKeyPressed(int keycode	) {
 		return GLFW.glfwGetKey(windowHandle, keycode) == GLFW.GLFW_PRESS;
+	}
+
+	/**
+	 * @param keycode
+	 * @returns True if key was pressed and returns false the frame after
+	 */
+	public boolean wasKeyPressed(int keycode) {
+		if (keyStates[keycode] == GLFW.GLFW_PRESS) {
+			boolean isDown = keys[keycode];
+			keys[keycode] = false;
+			return isDown;
+			// Thanks to illuminator3#0001 on discord for helping me with this,
+			// in discord server Together Java in #frameworks_help_0, 2022.01.01
+		}
+		return false;
 	}
 
 	public boolean windowShouldClose() {

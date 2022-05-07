@@ -25,7 +25,9 @@ public class TestGame implements ILogic {
 	private Entity entity;
 	Vector3f cameraInc;
 
+	private float speedModifier;
 	private boolean canTakeSC = false;
+	private boolean grabbingMouse = false;
 
 	public TestGame() {
 		renderer = new RenderManager();
@@ -33,78 +35,28 @@ public class TestGame implements ILogic {
 		loader = new ObjectLoader();
 		camera = new Camera();
 		cameraInc = new Vector3f(0, 0, 0);
+		speedModifier = 1.0f;
+		grabbingMouse = false;
 	}
 
 	@Override
 	public void init() throws Exception {
 		renderer.init();
 
-		float[] vertices = new float[] {
-				-0.5f, 0.5f, 0.5f,
-				-0.5f, -0.5f, 0.5f,
-				0.5f, -0.5f, 0.5f,
-				0.5f, 0.5f, 0.5f,
-				-0.5f, 0.5f, -0.5f,
-				0.5f, 0.5f, -0.5f,
-				-0.5f, -0.5f, -0.5f,
-				0.5f, -0.5f, -0.5f,
-				-0.5f, 0.5f, -0.5f,
-				0.5f, 0.5f, -0.5f,
-				-0.5f, 0.5f, 0.5f,
-				0.5f, 0.5f, 0.5f,
-				0.5f, 0.5f, 0.5f,
-				0.5f, -0.5f, 0.5f,
-				-0.5f, 0.5f, 0.5f,
-				-0.5f, -0.5f, 0.5f,
-				-0.5f, -0.5f, -0.5f,
-				0.5f, -0.5f, -0.5f,
-				-0.5f, -0.5f, 0.5f,
-				0.5f, -0.5f, 0.5f,
-		};
-		float[] textCoords = new float[]{
-				0.0f, 0.0f,
-				0.0f, 0.5f,
-				0.5f, 0.5f,
-				0.5f, 0.0f,
-				0.0f, 0.0f,
-				0.5f, 0.0f,
-				0.0f, 0.5f,
-				0.5f, 0.5f,
-				0.0f, 0.5f,
-				0.5f, 0.5f,
-				0.0f, 1.0f,
-				0.5f, 1.0f,
-				0.0f, 0.0f,
-				0.0f, 0.5f,
-				0.5f, 0.0f,
-				0.5f, 0.5f,
-				0.5f, 0.0f,
-				1.0f, 0.0f,
-				0.5f, 0.5f,
-				1.0f, 0.5f,
-		};
-		int[] indices = new int[]{
-				0, 1, 3, 3, 1, 2,
-				8, 10, 11, 9, 8, 11,
-				12, 13, 7, 5, 12, 7,
-				14, 15, 6, 4, 14, 6,
-				16, 18, 19, 17, 16, 19,
-				4, 6, 7, 5, 4, 7,
-		};
 
-		Model model = loader.loadModel(vertices, textCoords, indices);
-		model.setTexture(new Texture(loader.loadTexture("resources/textures/blocks.png")));
-		entity = new Entity(model, new Vector3f(0, 0, -5), new Vector3f(0, 0, 0), 1);
+		Model model = loader.loadOBJModel("resources/models/bunny.obj");
+		model.setTexture(new Texture(loader.loadTexture("resources/textures/blocks.png")), 1);
+		entity = new Entity(model, new Vector3f(0, 0, -1), new Vector3f(0, 0, 0), 1);
 	}
 
 	private void takeSc() {
-		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(window.getWidth() * window.getHeight() * 3);
-		GL11.glReadPixels(0,0, window.getWidth(), window.getHeight(), GL11.GL_RGB,GL11.GL_UNSIGNED_BYTE,byteBuffer);
-		STBImageWrite.stbi_flip_vertically_on_write(true);
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.SSS");
-		LocalDateTime time = LocalDateTime.now();
-		String name = dtf.format(time);
-		STBImageWrite.stbi_write_jpg("resources/screenshots/" + name + ".jpg", window.getWidth(), window.getHeight(), 3, byteBuffer, window.getWidth()  );
+		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(window.getWidth() * window.getHeight() * 3); // allocates a buffer to store pixels in
+		GL11.glReadPixels(0,0, window.getWidth(), window.getHeight(), GL11.GL_RGB,GL11.GL_UNSIGNED_BYTE,byteBuffer); // fills the buffer
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss.SSS"); LocalDateTime time = LocalDateTime.now(); String name = dtf.format(time);
+		STBImageWrite.stbi_flip_vertically_on_write(true); // flip the image
+		STBImageWrite.stbi_write_jpg("resources/screenshots/" + name + ".jpg", window.getWidth(), window.getHeight(),
+				3, byteBuffer, window.getWidth()); // write it to a jpg to save
+		System.out.println("Took screenshot and saved it to " + "resources/screenshots/" + name + ".jpg");
 	}
 
 	@Override
@@ -122,33 +74,43 @@ public class TestGame implements ILogic {
 			cameraInc.y = -1;
 		if (window.isKeyPressed(GLFW.GLFW_KEY_E))
 			cameraInc.y = 1;
-
-		if (window.isKeyPressed(GLFW.GLFW_KEY_F2)) {
-			canTakeSC = true;
-			try {	Thread.sleep(40);
-			} catch (InterruptedException ignored) {}
+		if (window.wasKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL)){
+			if (!grabbingMouse) {
+				GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+				grabbingMouse = true;
+			} else {
+				GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+				GLFW.glfwSetCursorPos(window.getWindowHandle(), (float)window.getWidth() / 2, (float)window.getHeight() / 2);
+				grabbingMouse = false;
+			}
 		}
+
+		if (window.wasKeyPressed(GLFW.GLFW_KEY_F2)) {
+			canTakeSC = true;
+		}
+
+		speedModifier = 1;
+		if (window.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT))
+			speedModifier = 0.2f;
 	}
 
 	@Override
 	public void update(float interval, MouseInput mouseInput) {
-		camera.movePosition(cameraInc.x * Constants.CAMERA_STEP, cameraInc.y * Constants.CAMERA_STEP, cameraInc.z * Constants.CAMERA_STEP);
-		if (mouseInput.isLeftButtonPress()) {
+		camera.movePosition(cameraInc.x * Constants.CAMERA_STEP * speedModifier, cameraInc.y * Constants.CAMERA_STEP * speedModifier, cameraInc.z * Constants.CAMERA_STEP * speedModifier);
+		if (mouseInput.isLeftButtonPress() || grabbingMouse) {
 			Vector2f rotVec = mouseInput.getDisplayVec();
 			camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
 		}
-		entity.incrementRotation(0, 0.f, 0);
+		entity.incrementRotation(0, 0.25f, 0);
 	}
 
 	@Override
 	public void render() {
-		if (window.isResize()) {
-			GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
-			window.setResize(false);
-		}
+		window.setClearColor(0.12f, 0.11f,0.112f,1);
+
 		renderer.render(entity, camera);
 
-		if (canTakeSC)
+		if (canTakeSC) // after the draw
 			takeSc();
 		canTakeSC = false;
 	}

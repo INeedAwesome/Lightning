@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import site.gr8.mattis.lightning.Launcher;
 import site.gr8.mattis.lightning.core.entity.Entity;
+import site.gr8.mattis.lightning.core.utils.Constants;
 import site.gr8.mattis.lightning.core.utils.Transformation;
 import site.gr8.mattis.lightning.core.utils.Utils;
 
@@ -27,22 +28,35 @@ public class RenderManager {
 		shader.createUniform("transformationMatrix");
 		shader.createUniform("projectionMatrix");
 		shader.createUniform("viewMatrix");
+		shader.createUniform("ambientLight");
+		shader.createMaterialUniform("material");
 	}
 	public void render(Entity entity, Camera camera) {
 		clear();
+
+		if (window.isResize()) {
+			GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
+			window.setResize(false);
+		}
+
 		shader.bind();
 		shader.setUniform("textureSampler", 0);
 		shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(entity));
 		shader.setUniform("projectionMatrix", window.updateProjectionMatrix());
 		shader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
+		shader.setUniform("material", entity.getModel().getMaterial());
+		shader.setUniform("ambientLight", Constants.AMBIENT_LIGHT);
+
 		GL30.glBindVertexArray(entity.getModel().getId());
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
+		GL20.glEnableVertexAttribArray(2);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, entity.getModel().getTexture().getId());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 		GL20.glDisableVertexAttribArray(0);
 		GL20.glDisableVertexAttribArray(1);
+		GL20.glDisableVertexAttribArray(2);
 		GL30.glBindVertexArray(0);
 		shader.unbind();
 	}

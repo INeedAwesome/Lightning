@@ -47,8 +47,12 @@ public class MouseInput {
 				this.displayVec.y = (float) x;
 			}
 			if (rotateY)
-				this.displayVec.x = (float)y;
+				this.displayVec.x = (float) y;
 		}
+		if (currentPosition.x < 1 )
+			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), Launcher.getWindow().getWidth() / 2 , currentPosition.y);
+		if (currentPosition.y < 1)
+			GLFW.glfwSetCursorPos(Launcher.getWindow().getWindowHandle(), currentPosition.x , Launcher.getWindow().getHeight() -1);
 		previousPosition.x = currentPosition.x;
 		previousPosition.y = currentPosition.y;
 	}
